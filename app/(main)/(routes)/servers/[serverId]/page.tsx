@@ -1,3 +1,5 @@
+// In your dynamic route component file `/pages/servers/[serverId].tsx`
+
 import { GetStaticProps, GetStaticPaths } from 'next';
 
 interface ServerIdPageProps {
