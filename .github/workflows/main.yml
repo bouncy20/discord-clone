@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: discord_clone
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dXAtbXVkZmlzaC00Ny5jbGVyay5hY2NvdW50cy5kZXYk
+      CLERK_SECRET_KEY: sk_test_RVglbdzGSqEpRM15cJd4BiyAsWJ9aaOtkSiHX6JECE
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /
+      DATABASE_URL: postgresql://chat%20application_owner:PV23CjexEhyk@ep-long-breeze-a50fso91-pooler.us-east-2.aws.neon.tech/chat?sslmode=require
+      UPLOADTHING_SECRET: sk_live_003bdaf5ea68572904c4be2107546143a990889dd4f6883ea7fffb99f35f0b95
+      UPLOADTHING_APP_ID: gz6gb73atu
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20' # Use the version of Node.js that your project requires
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Generate Prisma Client
+      run: npx prisma generate
+
+    - name: Migrate Database
+      run: npx prisma migrate deploy
+
+    - name: Run tests
+      run: npm test
+
+    - name: Build project
+      run: npm run build
